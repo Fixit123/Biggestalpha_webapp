@@ -14,6 +14,7 @@ const nextConfig = {
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
   },
+  output: 'standalone',
 }
 
 module.exports = nextConfig
