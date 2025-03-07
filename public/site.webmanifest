@@ -1,0 +1,8 @@
+{
+  "name": "Biggest Alpha",
+  "short_name": "Biggest Alpha",
+  "icons": [],
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff",
+  "display": "standalone"
+} 
