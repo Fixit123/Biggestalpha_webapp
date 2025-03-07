@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  webapp:
+    build:
+      context: .
+      dockerfile: Dockerfile.debug
+      args:
+        - NEXT_PUBLIC_SITE_URL=https://www.biggestalpha.com.ng
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0 

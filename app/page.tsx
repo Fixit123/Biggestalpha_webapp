@@ -34,31 +34,41 @@ type Service = {
 export default function HomePage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [deviceType, setDeviceType] = useState('')
   const [customDevice, setCustomDevice] = useState('')
   const [issue, setIssue] = useState('')
-  const [featuredServices, setFeaturedServices] = useState<Service[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState('')
+  const [featuredServices, setFeaturedServices] = useState<Service[]>([])
+  const [servicesLoading, setServicesLoading] = useState(true)
+  const [servicesError, setServicesError] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   useEffect(() => {
     async function loadServices() {
       try {
-        const data = await getFeaturedServices()
-        if (data) setFeaturedServices(data)
-      } catch (error) {
-        console.error('Error loading services:', error)
+        setServicesLoading(true)
+        setServicesError('')
+        const services = await getFeaturedServices()
+        console.log('Loaded featured services:', services)
+        setFeaturedServices(services || [])
+      } catch (err) {
+        console.error('Error loading featured services:', err)
+        setServicesError('Failed to load services')
+      } finally {
+        setServicesLoading(false)
       }
     }
-
+    
     loadServices()
   }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setIsSubmitting(true)
-    setSubmitError(null)
+    setError('')
     
     try {
       // Validate inputs
@@ -98,7 +108,7 @@ export default function HomePage() {
       setIssue('')
       
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'An error occurred')
+      setError(error instanceof Error ? error.message : 'An error occurred')
       console.error('Submission error:', error)
     } finally {
       setIsSubmitting(false)
@@ -125,68 +135,89 @@ export default function HomePage() {
               </h2>
             </ScrollAnimation>
             
-            <div className="grid gap-8 md:grid-cols-3">
-              {featuredServices?.map((service, index) => (
-                <motion.div 
-                  key={service.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  whileHover={{ scale: 1.02 }}
-                  className={`relative bg-card rounded-lg shadow-lg overflow-hidden
-                    ${service.category === 'Shop' ? 'md:col-span-3' : ''}`}
-                >
-                  <div className={`relative ${service.category === 'Shop' ? 'h-64' : 'h-48'}`}>
-                    {service.image && (
-                      <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        transition={{ duration: 0.3 }}
-                        className="relative h-full"
-                      >
-                        <Image
-                          src={service.image}
-                          alt={service.name}
-                          fill
-                          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-                          className="object-cover"
-                          priority={index === 0}
-                        />
-                      </motion.div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  </div>
+            {servicesLoading && (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+              </div>
+            )}
+            
+            {servicesError && (
+              <div className="text-center py-8">
+                <p className="text-red-500">{servicesError}</p>
+                <p className="mt-2">Please try refreshing the page</p>
+              </div>
+            )}
+            
+            {!servicesLoading && !servicesError && featuredServices.length === 0 && (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">No featured services available at the moment.</p>
+              </div>
+            )}
+            
+            {!servicesLoading && featuredServices.length > 0 && (
+              <div className="grid gap-8 md:grid-cols-3">
+                {featuredServices.map((service, index) => (
                   <motion.div 
-                    className="p-6"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3, delay: 0.2 }}
+                    key={service.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    whileHover={{ scale: 1.02 }}
+                    className={`relative bg-card rounded-lg shadow-lg overflow-hidden
+                      ${service.category === 'Shop' ? 'md:col-span-3' : ''}`}
                   >
-                    {service.category !== 'Shop' && (
-                      <h3 className="text-xl font-bold mb-3">{service.name}</h3>
-                    )}
-                    <p className={`text-muted-foreground mb-4 ${service.category === 'Shop' ? 'whitespace-pre-line' : 'line-clamp-3'}`}>
-                      {service.description}
-                    </p>
-                    <div className="flex items-center gap-4">
-                      {service.category === 'Shop' ? (
-                        <Button asChild size="lg">
-                          <Link href="/contact">Contact for Availability</Link>
-                        </Button>
-                      ) : (
-                        <>
-                          <Button asChild variant="outline">
-                            <Link href={`/services/${service.id}`}>Learn More</Link>
-                          </Button>
-                          <Button asChild>
-                            <Link href="/book-repair">Book Now</Link>
-                          </Button>
-                        </>
+                    <div className={`relative ${service.category === 'Shop' ? 'h-64' : 'h-48'}`}>
+                      {service.image && (
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          transition={{ duration: 0.3 }}
+                          className="relative h-full"
+                        >
+                          <Image
+                            src={service.image}
+                            alt={service.name}
+                            fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
+                            className="object-cover"
+                            priority={index === 0}
+                          />
+                        </motion.div>
                       )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     </div>
+                    <motion.div 
+                      className="p-6"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3, delay: 0.2 }}
+                    >
+                      {service.category !== 'Shop' && (
+                        <h3 className="text-xl font-bold mb-3">{service.name}</h3>
+                      )}
+                      <p className={`text-muted-foreground mb-4 ${service.category === 'Shop' ? 'whitespace-pre-line' : 'line-clamp-3'}`}>
+                        {service.description}
+                      </p>
+                      <div className="flex items-center gap-4">
+                        {service.category === 'Shop' ? (
+                          <Button asChild size="lg">
+                            <Link href="/contact">Contact for Availability</Link>
+                          </Button>
+                        ) : (
+                          <>
+                            <Button asChild variant="outline">
+                              <Link href={`/services/${service.id}`}>Learn More</Link>
+                            </Button>
+                            <Button asChild>
+                              <Link href="/book-repair">Book Now</Link>
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </motion.div>
                   </motion.div>
-                </motion.div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </section>
 
           <ScrollAnimation>
