@@ -16,11 +16,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  experimental: {
-    webpackBuildWorker: true,
-    parallelServerBuildTraces: true,
-    parallelServerCompiles: true,
-  },
+  output: 'standalone',
   // Security Headers
   async headers() {
     return [
