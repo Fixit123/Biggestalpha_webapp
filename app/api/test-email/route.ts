@@ -1,16 +1,1 @@
-import { testEmail } from "@/utils/test-email"
-import { NextResponse } from "next/server"
-
-export async function GET(request: Request) {
-  try {
-    const result = await testEmail()
-    console.log("Email test result:", result) // Debug log
-    return NextResponse.json(result)
-  } catch (error) {
-    console.error("Test route error:", error)
-    return NextResponse.json({ 
-      success: false, 
-      error: "Failed to send test email" 
-    }, { status: 500 })
-  }
-} 
+npx shadcn@latest add "https://v0.dev/chat/b/b_NcUaDgEmpzK?token=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..05-24TyOE-7MI-c9.DHBkS-c4U9sDm1HCuGiAsz4vYmC3E-ufkR_GZ8oE68nN2kYvtqSfrKFMPco.eSElP5_laJYWPKHbn03vVQ"
